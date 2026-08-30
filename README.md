@@ -62,6 +62,10 @@ succeeds. It is written against a real database on purpose: the property under
 test belongs to Postgres, not to Python, so a mocked session would prove
 nothing.
 
+Coverage is 28% and concentrated on the domain core (money, order state
+machine, localisation, pagination) rather than spread thin across HTTP glue.
+Service-layer tests are the next increment.
+
 ## Documentation
 
 - [`docs/architecture.md`](docs/architecture.md) — layering, request lifecycle, module boundaries

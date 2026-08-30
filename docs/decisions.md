@@ -164,3 +164,37 @@ list is not a design.
   sandbox and a real PSP are interchangeable.
 - **Admin interface.** The API and permission model support it
   (`require_roles("admin", "staff")`); the UI is out of scope.
+
+---
+
+## What strict CI caught
+
+The pipeline runs `ruff`, `mypy --strict`, `alembic upgrade head` against an
+empty database, and `pytest` against a real Postgres. The first time it ran end
+to end it found three defects, and not one of them was reachable from a pure
+unit test.
+
+**Domain events could not be written at all.** `DomainEvent.to_payload()`
+returned `asdict(self)` unmodified, leaving `uuid.UUID` and `datetime` objects
+in a dictionary bound for a JSONB column. Every event class here carries at
+least one UUID, so the outbox insert failed on all of them - and because that
+insert shares a transaction with the state change that produced it, every write
+path emitting an event went down with it, reserving stock included.
+
+**Migration 0001 could not run against an empty database.** Both `pg.ENUM`
+types were created explicitly with `checkfirst=True` and then a second time,
+unguarded, by the `CREATE TABLE` that referenced them. `alembic upgrade head`
+stopped on `type "order_status" already exists` at the very first revision -
+invisible to anyone whose database was already migrated, fatal to anyone
+starting from scratch.
+
+**The concurrency tests never ran.** `tests/integration/` requested a
+`seeded_variant_with_one_unit` fixture that was never defined, so both tests
+errored during collection rather than failing. A suite that does not run and a
+suite that passes look identical to anyone who does not read the output, which
+is the argument for a gate that fails the build.
+
+The common thread is that each needed a different kind of execution to surface:
+a type checker that refuses to infer `Any`, a migration run against a genuinely
+empty database, and a test run against a real one. Any single stage would have
+missed the other two.
