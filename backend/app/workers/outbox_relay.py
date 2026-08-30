@@ -11,6 +11,7 @@ handler must tolerate replay.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import signal
 from collections.abc import Awaitable, Callable
 from typing import Any
@@ -51,9 +52,7 @@ async def notify_warehouse(payload: dict[str, Any]) -> None:
 
 @on("inventory.ran_low")
 async def alert_merchandising(payload: dict[str, Any]) -> None:
-    logger.info(
-        "restock_alert", variant_id=payload["variant_id"], remaining=payload["remaining"]
-    )
+    logger.info("restock_alert", variant_id=payload["variant_id"], remaining=payload["remaining"])
 
 
 class Relay:
@@ -78,7 +77,7 @@ class Relay:
                             await handler(message.payload)
                         await mark_published(session, message.id)
                         processed += 1
-                    except Exception as exc:  # noqa: BLE001
+                    except Exception as exc:
                         logger.warning(
                             "relay_handler_failed",
                             event_type=message.event_type,
@@ -91,10 +90,8 @@ class Relay:
             if processed == 0:
                 # Idle backoff so an empty queue does not spin the database.
                 with_timeout = self._settings.outbox_poll_interval_seconds
-                try:
+                with contextlib.suppress(TimeoutError):
                     await asyncio.wait_for(self._stopping.wait(), timeout=with_timeout)
-                except TimeoutError:
-                    pass
 
         logger.info("relay_stopped")
 

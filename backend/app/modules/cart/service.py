@@ -7,7 +7,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import InsufficientStock, NotFound, ValidationFailed
+from app.core.errors import InsufficientStockError, NotFoundError, ValidationFailedError
 from app.core.money import Money
 from app.modules.cart.models import Cart, CartItem
 from app.modules.catalog.repository import ProductRepository
@@ -19,7 +19,7 @@ MAX_DISTINCT_LINES = 50
 
 
 class CartTotals:
-    __slots__ = ("subtotal", "vat", "shipping", "total", "item_count")
+    __slots__ = ("item_count", "shipping", "subtotal", "total", "vat")
 
     def __init__(self, subtotal: Money, vat: Money, shipping: Money, item_count: int) -> None:
         self.subtotal = subtotal
@@ -57,9 +57,7 @@ class CartService:
         if user_id:
             cart = await self._session.scalar(stmt.where(Cart.user_id == user_id))
         elif anonymous_token:
-            cart = await self._session.scalar(
-                stmt.where(Cart.anonymous_token == anonymous_token)
-            )
+            cart = await self._session.scalar(stmt.where(Cart.anonymous_token == anonymous_token))
         else:
             cart = None
 
@@ -108,18 +106,18 @@ class CartService:
 
     async def add_item(self, cart: Cart, variant_id: uuid.UUID, quantity: int) -> Cart:
         if quantity < 1:
-            raise ValidationFailed("quantity must be at least 1")
+            raise ValidationFailedError("quantity must be at least 1")
 
         variant = await self._products.get_variant(variant_id)
         if variant is None or not variant.is_active:
-            raise NotFound("variant not available", variant_id=str(variant_id))
+            raise NotFoundError("variant not available", variant_id=str(variant_id))
 
         line = next((i for i in cart.items if i.variant_id == variant_id), None)
         target_quantity = min((line.quantity if line else 0) + quantity, MAX_LINE_QUANTITY)
 
         sellable = (await self._inventory.sellable_map([variant_id])).get(variant_id, 0)
         if sellable < target_quantity:
-            raise InsufficientStock(
+            raise InsufficientStockError(
                 "requested quantity exceeds available stock",
                 available=sellable,
                 requested=target_quantity,
@@ -127,7 +125,7 @@ class CartService:
 
         if line is None:
             if len(cart.items) >= MAX_DISTINCT_LINES:
-                raise ValidationFailed("cart line limit reached", limit=MAX_DISTINCT_LINES)
+                raise ValidationFailedError("cart line limit reached", limit=MAX_DISTINCT_LINES)
             self._session.add(
                 CartItem(
                     cart_id=cart.id,
@@ -147,13 +145,15 @@ class CartService:
     async def set_quantity(self, cart: Cart, variant_id: uuid.UUID, quantity: int) -> Cart:
         line = next((i for i in cart.items if i.variant_id == variant_id), None)
         if line is None:
-            raise NotFound("line not in cart")
+            raise NotFoundError("line not in cart")
         if quantity <= 0:
             await self._session.delete(line)
         else:
             sellable = (await self._inventory.sellable_map([variant_id])).get(variant_id, 0)
             if sellable < quantity:
-                raise InsufficientStock("not enough stock", available=sellable, requested=quantity)
+                raise InsufficientStockError(
+                    "not enough stock", available=sellable, requested=quantity
+                )
             line.quantity = min(quantity, MAX_LINE_QUANTITY)
         await self._session.flush()
         await self._session.refresh(cart)

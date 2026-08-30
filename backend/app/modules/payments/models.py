@@ -11,7 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base, Timestamped, UUIDPrimaryKey
 
 
-class PaymentStatus(str, enum.Enum):
+class PaymentStatus(enum.StrEnum):
     INITIATED = "initiated"
     AUTHORIZED = "authorized"
     CAPTURED = "captured"

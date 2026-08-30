@@ -20,7 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import Conflict, NotFound, PaymentDeclined
+from app.core.errors import ConflictError, NotFoundError, PaymentDeclinedError
 from app.modules.orders.models import Order
 from app.modules.payments.models import Payment, PaymentStatus, ProcessedWebhook
 from app.shared.unit_of_work import UnitOfWork
@@ -97,7 +97,7 @@ class PaymentService:
 
         if intent.status is PaymentStatus.FAILED:
             payment.failure_reason = "declined_by_issuer"
-            raise PaymentDeclined("payment was declined", reference=intent.reference)
+            raise PaymentDeclinedError("payment was declined", reference=intent.reference)
         return payment
 
     async def capture(self, reference: str) -> Payment:
@@ -105,16 +105,16 @@ class PaymentService:
             select(Payment).where(Payment.provider_reference == reference)
         )
         if payment is None:
-            raise NotFound("payment not found")
+            raise NotFoundError("payment not found")
         if payment.status is PaymentStatus.CAPTURED:
             return payment  # idempotent: a repeat capture is a no-op
         if payment.status is not PaymentStatus.AUTHORIZED:
-            raise Conflict("payment is not in a capturable state", status=payment.status.value)
+            raise ConflictError("payment is not in a capturable state", status=payment.status.value)
 
         if not await self._gateway.capture(reference):
             payment.status = PaymentStatus.FAILED
             payment.failure_reason = "capture_rejected"
-            raise PaymentDeclined("capture rejected")
+            raise PaymentDeclinedError("capture rejected")
 
         payment.status = PaymentStatus.CAPTURED
         payment.captured_at = datetime.now(UTC)
@@ -122,9 +122,7 @@ class PaymentService:
 
     async def record_webhook(self, provider: str, event_id: str, payload: dict) -> bool:
         """Returns False if this callback was already handled."""
-        self._session.add(
-            ProcessedWebhook(provider=provider, event_id=event_id, payload=payload)
-        )
+        self._session.add(ProcessedWebhook(provider=provider, event_id=event_id, payload=payload))
         try:
             await self._session.flush()
         except IntegrityError:

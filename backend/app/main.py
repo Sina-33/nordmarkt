@@ -84,15 +84,17 @@ def create_app() -> FastAPI:
             async with get_engine().connect() as conn:
                 await conn.execute(text("SELECT 1"))
             checks["database"] = "ok"
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             checks["database"] = f"error: {type(exc).__name__}"
         try:
             await app.state.redis.ping()
             checks["redis"] = "ok"
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             checks["redis"] = f"error: {type(exc).__name__}"
 
-        checks["status"] = "ok" if all(v == "ok" for k, v in checks.items() if k != "status") else "degraded"
+        checks["status"] = (
+            "ok" if all(v == "ok" for k, v in checks.items() if k != "status") else "degraded"
+        )
         return checks
 
     return app

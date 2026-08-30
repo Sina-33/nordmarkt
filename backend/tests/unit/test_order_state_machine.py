@@ -1,6 +1,6 @@
 import pytest
 
-from app.core.errors import Conflict
+from app.core.errors import ConflictError
 from app.modules.orders.models import Order, OrderStatus
 
 
@@ -19,21 +19,25 @@ def make_order(status: OrderStatus) -> Order:
 
 def test_happy_path_transitions() -> None:
     order = make_order(OrderStatus.PENDING_PAYMENT)
-    for target in (OrderStatus.PAID, OrderStatus.PACKING, OrderStatus.SHIPPED,
-                   OrderStatus.DELIVERED):
+    for target in (
+        OrderStatus.PAID,
+        OrderStatus.PACKING,
+        OrderStatus.SHIPPED,
+        OrderStatus.DELIVERED,
+    ):
         order.transition_to(target)
     assert order.status is OrderStatus.DELIVERED
 
 
 def test_cancelled_order_is_terminal() -> None:
     order = make_order(OrderStatus.CANCELLED)
-    with pytest.raises(Conflict):
+    with pytest.raises(ConflictError):
         order.transition_to(OrderStatus.SHIPPED)
 
 
 def test_cannot_ship_before_payment() -> None:
     order = make_order(OrderStatus.PENDING_PAYMENT)
-    with pytest.raises(Conflict):
+    with pytest.raises(ConflictError):
         order.transition_to(OrderStatus.SHIPPED)
 
 

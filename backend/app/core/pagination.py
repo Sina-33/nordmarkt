@@ -11,11 +11,9 @@ from __future__ import annotations
 import base64
 import json
 from dataclasses import dataclass
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 from pydantic import BaseModel
-
-T = TypeVar("T")
 
 
 def encode_cursor(payload: dict[str, Any]) -> str:
@@ -28,7 +26,7 @@ def decode_cursor(cursor: str) -> dict[str, Any]:
 
 
 @dataclass(slots=True)
-class Page(Generic[T]):
+class Page[T]:
     items: list[T]
     next_cursor: str | None
     total: int | None = None
@@ -39,6 +37,6 @@ class PageMeta(BaseModel):
     total: int | None = None
 
 
-class PagedResponse(BaseModel, Generic[T]):
+class PagedResponse[T](BaseModel):
     data: list[T]
     meta: PageMeta

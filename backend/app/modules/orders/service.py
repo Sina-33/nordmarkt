@@ -24,7 +24,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import CartEmpty, Forbidden, NotFound, PriceChanged
+from app.core.errors import CartEmptyError, ForbiddenError, NotFoundError, PriceChangedError
 from app.core.logging import get_logger
 from app.core.money import Money
 from app.core.pagination import Page, decode_cursor, encode_cursor
@@ -82,11 +82,11 @@ class CheckoutService:
         locale: str = "sv",
     ) -> Order:
         if not cart.items:
-            raise CartEmpty("cannot check out an empty cart")
+            raise CartEmptyError("cannot check out an empty cart")
 
         drift = await self._carts.repricing_report(cart)
         if drift and not accept_price_changes:
-            raise PriceChanged("prices changed since these items were added", changes=drift)
+            raise PriceChangedError("prices changed since these items were added", changes=drift)
 
         shipping = await self._load_address(shipping_address_id, user_id)
         billing = (
@@ -115,12 +115,12 @@ class CheckoutService:
         self._session.add(order)
         await self._session.flush()
 
-        # Reserve first, then attach lines. Any InsufficientStock raised here
+        # Reserve first, then attach lines. Any InsufficientStockError raised here
         # propagates out of the Unit of Work and rolls the order back with it.
         for line in cart.items:
             variant = variants.get(line.variant_id)
             if variant is None or not variant.is_active:
-                raise NotFound("a product in the cart is no longer available")
+                raise NotFoundError("a product in the cart is no longer available")
 
             await self._inventory.reserve(variant.id, line.quantity, order_id=order.id)
 
@@ -187,9 +187,7 @@ class CheckoutService:
             await self._inventory.release(reservation)
 
         self._uow.emit(
-            OrderCancelled(
-                aggregate_id=order.id, order_number=order.order_number, reason=reason
-            )
+            OrderCancelled(aggregate_id=order.id, order_number=order.order_number, reason=reason)
         )
         return order
 
@@ -204,11 +202,11 @@ class CheckoutService:
     async def _load_address(self, address_id: uuid.UUID, user_id: uuid.UUID) -> Address:
         address = await self._session.get(Address, address_id)
         if address is None:
-            raise NotFound("address not found")
+            raise NotFoundError("address not found")
         if address.user_id != user_id:
             # Deliberately a 403 and not a 404: the caller is authenticated and
             # the resource exists, it just is not theirs.
-            raise Forbidden("address belongs to another account")
+            raise ForbiddenError("address belongs to another account")
         return address
 
 
@@ -217,13 +215,11 @@ class OrderQueryService:
         self._session = session
 
     async def get_for_customer(self, order_number: str, user_id: uuid.UUID) -> Order:
-        order = await self._session.scalar(
-            select(Order).where(Order.order_number == order_number)
-        )
+        order = await self._session.scalar(select(Order).where(Order.order_number == order_number))
         if order is None:
-            raise NotFound("order not found")
+            raise NotFoundError("order not found")
         if order.customer_id != user_id:
-            raise Forbidden("order belongs to another account")
+            raise ForbiddenError("order belongs to another account")
         return order
 
     async def list_for_customer(

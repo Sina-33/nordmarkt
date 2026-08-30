@@ -114,7 +114,7 @@ class ProductListOut(BaseModel):
     meta: dict[str, object]
 
 
-def to_summary(product, locale: str) -> ProductSummaryOut:  # noqa: ANN001
+def to_summary(product, locale: str) -> ProductSummaryOut:
     variant = product.default_variant
     image = product.images[0] if product.images else None
     return ProductSummaryOut(
@@ -148,7 +148,7 @@ def to_summary(product, locale: str) -> ProductSummaryOut:  # noqa: ANN001
     )
 
 
-def to_detail(product, locale: str, stock: dict[uuid.UUID, int]) -> ProductDetailOut:  # noqa: ANN001
+def to_detail(product, locale: str, stock: dict[uuid.UUID, int]) -> ProductDetailOut:
     summary = to_summary(product, locale)
     highlights = product.highlights.get(locale) or product.highlights.get("sv") or []
     return ProductDetailOut(

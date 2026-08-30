@@ -68,7 +68,9 @@ async def register(
         locale=payload.locale,
     )
     tokens = await identity.start_session(
-        user, user_agent=request.headers.get("user-agent"), ip=request.client.host if request.client else None
+        user,
+        user_agent=request.headers.get("user-agent"),
+        ip=request.client.host if request.client else None,
     )
     await uow.commit()
     return TokenOut(

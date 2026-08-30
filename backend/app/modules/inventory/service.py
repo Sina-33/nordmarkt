@@ -23,7 +23,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import InsufficientStock
+from app.core.errors import InsufficientStockError
 from app.core.logging import get_logger
 from app.modules.inventory.models import StockItem, StockReservation
 from app.shared.events import StockRanLow, StockReserved
@@ -66,13 +66,14 @@ class InventoryService:
                 StockItem.on_hand - StockItem.reserved >= quantity,
             )
             .values(reserved=StockItem.reserved + quantity)
-            .returning(StockItem.id, StockItem.on_hand, StockItem.reserved,
-                       StockItem.low_stock_threshold)
+            .returning(
+                StockItem.id, StockItem.on_hand, StockItem.reserved, StockItem.low_stock_threshold
+            )
         )
         row = (await self._session.execute(stmt)).first()
         if row is None:
             available = (await self.sellable_map([variant_id])).get(variant_id, 0)
-            raise InsufficientStock(
+            raise InsufficientStockError(
                 "not enough stock to reserve",
                 variant_id=str(variant_id),
                 requested=quantity,
@@ -151,7 +152,9 @@ class InventoryService:
             logger.info("released_expired_reservations", count=len(expired))
         return len(expired)
 
-    async def restock(self, variant_id: uuid.UUID, quantity: int, warehouse: str = "SE-STO") -> None:
+    async def restock(
+        self, variant_id: uuid.UUID, quantity: int, warehouse: str = "SE-STO"
+    ) -> None:
         item = await self._session.scalar(
             select(StockItem).where(
                 StockItem.variant_id == variant_id, StockItem.warehouse_code == warehouse

@@ -147,9 +147,11 @@ class ProductRepository:
         return Page(items=items, next_cursor=next_cursor)
 
     async def count(self, query: ProductQuery) -> int:
-        stmt = self._base_statement(query).with_only_columns(
-            func.count(func.distinct(Product.id))
-        ).order_by(None)
+        stmt = (
+            self._base_statement(query)
+            .with_only_columns(func.count(func.distinct(Product.id)))
+            .order_by(None)
+        )
         return int(await self._session.scalar(stmt) or 0)
 
     async def price_bounds(self, query: ProductQuery) -> tuple[int, int]:

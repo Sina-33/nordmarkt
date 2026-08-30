@@ -14,7 +14,7 @@ import uuid
 
 import pytest
 
-from app.core.errors import InsufficientStock
+from app.core.errors import InsufficientStockError
 from app.db.session import get_session_factory
 from app.modules.inventory.service import InventoryService
 from app.shared.unit_of_work import UnitOfWork
@@ -28,12 +28,12 @@ async def attempt_reserve(variant_id: uuid.UUID, quantity: int) -> bool:
             await InventoryService(uow).reserve(variant_id, quantity)
             await uow.commit()
         return True
-    except InsufficientStock:
+    except InsufficientStockError:
         return False
 
 
 @pytest.mark.asyncio
-async def test_only_one_shopper_gets_the_last_unit(seeded_variant_with_one_unit) -> None:  # noqa: ANN001
+async def test_only_one_shopper_gets_the_last_unit(seeded_variant_with_one_unit) -> None:
     variant_id = seeded_variant_with_one_unit
 
     results = await asyncio.gather(
@@ -44,7 +44,7 @@ async def test_only_one_shopper_gets_the_last_unit(seeded_variant_with_one_unit)
 
 
 @pytest.mark.asyncio
-async def test_released_reservation_returns_stock(seeded_variant_with_one_unit) -> None:  # noqa: ANN001
+async def test_released_reservation_returns_stock(seeded_variant_with_one_unit) -> None:
     variant_id = seeded_variant_with_one_unit
 
     async with UnitOfWork(get_session_factory()) as uow:

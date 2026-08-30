@@ -9,7 +9,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
-from app.core.errors import Conflict, NotFound, Unauthorized
+from app.core.errors import ConflictError, NotFoundError, UnauthorizedError
 from app.core.security import (
     decode_token,
     hash_password,
@@ -22,7 +22,7 @@ from app.shared.unit_of_work import UnitOfWork
 
 
 class TokenPair:
-    __slots__ = ("access_token", "refresh_token", "expires_in")
+    __slots__ = ("access_token", "expires_in", "refresh_token")
 
     def __init__(self, access_token: str, refresh_token: str, expires_in: int) -> None:
         self.access_token = access_token
@@ -54,7 +54,7 @@ class IdentityService:
         normalised = email.strip().lower()
         exists = await self._session.scalar(select(User.id).where(User.email == normalised))
         if exists:
-            raise Conflict("an account with this email already exists")
+            raise ConflictError("an account with this email already exists")
 
         user = User(
             email=normalised,
@@ -72,11 +72,11 @@ class IdentityService:
             # Run a hash anyway so response time does not reveal whether the
             # address exists. Cheap defence against user enumeration.
             hash_password(password)
-            raise Unauthorized("invalid credentials")
+            raise UnauthorizedError("invalid credentials")
         if not verify_password(password, user.password_hash):
-            raise Unauthorized("invalid credentials")
+            raise UnauthorizedError("invalid credentials")
         if not user.is_active:
-            raise Unauthorized("account is disabled")
+            raise UnauthorizedError("account is disabled")
         if needs_rehash(user.password_hash):
             user.password_hash = hash_password(password)
         return user
@@ -116,13 +116,13 @@ class IdentityService:
         if record is None or record.token_hash != _fingerprint(refresh_token):
             if record is not None:
                 await self._revoke_all(record.user_id)
-            raise Unauthorized("refresh token rejected")
+            raise UnauthorizedError("refresh token rejected")
         if record.revoked_at or record.expires_at < datetime.now(UTC):
-            raise Unauthorized("session expired")
+            raise UnauthorizedError("session expired")
 
         user = await self._session.get(User, record.user_id)
         if user is None or not user.is_active:
-            raise Unauthorized("account unavailable")
+            raise UnauthorizedError("account unavailable")
 
         record.revoked_at = datetime.now(UTC)
         return await self.start_session(user, user_agent=record.user_agent, ip=record.ip_address)
@@ -154,7 +154,7 @@ class IdentityService:
     async def get_user(self, user_id: uuid.UUID) -> User:
         user = await self._session.get(User, user_id)
         if user is None:
-            raise NotFound("user not found")
+            raise NotFoundError("user not found")
         return user
 
 

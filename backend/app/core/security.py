@@ -10,7 +10,7 @@ from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 
 from app.core.config import get_settings
-from app.core.errors import Unauthorized
+from app.core.errors import UnauthorizedError
 
 _hasher = PasswordHasher(time_cost=3, memory_cost=64 * 1024, parallelism=4)
 
@@ -65,9 +65,9 @@ def decode_token(token: str, expected_type: TokenType) -> dict[str, Any]:
     try:
         claims = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
     except jwt.ExpiredSignatureError as exc:
-        raise Unauthorized("token expired") from exc
+        raise UnauthorizedError("token expired") from exc
     except jwt.PyJWTError as exc:
-        raise Unauthorized("invalid token") from exc
+        raise UnauthorizedError("invalid token") from exc
     if claims.get("typ") != expected_type:
-        raise Unauthorized("wrong token type")
+        raise UnauthorizedError("wrong token type")
     return claims

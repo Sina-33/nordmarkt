@@ -7,7 +7,7 @@ from fastapi import APIRouter, Cookie, Response, status
 from pydantic import BaseModel, Field
 
 from app.api.deps import CartDep, LocaleDep, OptionalUser, UoWDep
-from app.core.errors import NotFound
+from app.core.errors import NotFoundError
 from app.modules.catalog.repository import ProductRepository
 from app.modules.catalog.schemas import MoneyOut
 from app.shared.localization import resolve_translation
@@ -50,7 +50,7 @@ class CartOut(BaseModel):
     free_shipping_remaining: MoneyOut | None
 
 
-async def _serialise(cart, service, uow, locale: str) -> CartOut:  # noqa: ANN001
+async def _serialise(cart, service, uow, locale: str) -> CartOut:
     products = ProductRepository(uow.session)
     variants = await products.get_variants([i.variant_id for i in cart.items])
     totals = await service.totals(cart)
@@ -162,7 +162,7 @@ async def set_quantity(
         user_id=user.id if user else None, anonymous_token=nm_cart, create=False
     )
     if cart is None:
-        raise NotFound("no open cart")
+        raise NotFoundError("no open cart")
     cart = await service.set_quantity(cart, variant_id, payload.quantity)
     await uow.commit()
     return await _serialise(cart, service, uow, locale)

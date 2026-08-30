@@ -19,11 +19,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.errors import Conflict
+from app.core.errors import ConflictError
 from app.db.base import Base, Timestamped, UUIDPrimaryKey
 
 
-class OrderStatus(str, enum.Enum):
+class OrderStatus(enum.StrEnum):
     PENDING_PAYMENT = "pending_payment"
     PAID = "paid"
     PACKING = "packing"
@@ -84,7 +84,7 @@ class Order(UUIDPrimaryKey, Timestamped, Base):
 
     def transition_to(self, target: OrderStatus) -> None:
         if target not in ALLOWED_TRANSITIONS[self.status]:
-            raise Conflict(
+            raise ConflictError(
                 f"cannot move order from {self.status.value} to {target.value}",
                 current=self.status.value,
                 requested=target.value,

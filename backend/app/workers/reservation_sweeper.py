@@ -27,7 +27,7 @@ async def main() -> None:
     while True:
         try:
             await sweep_once()
-        except Exception:  # noqa: BLE001
+        except Exception:
             logger.exception("sweep_failed")
         await asyncio.sleep(INTERVAL_SECONDS)
 

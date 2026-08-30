@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Query, Response
 
 from app.api.deps import InventoryDep, LocaleDep, UoWDep
-from app.core.errors import NotFound
+from app.core.errors import NotFoundError
 from app.modules.catalog.repository import CategoryRepository, ProductQuery, ProductRepository
 from app.modules.catalog.schemas import (
     BrandFacetOut,
@@ -82,7 +82,7 @@ async def get_product(
 ) -> ProductDetailOut:
     product = await ProductRepository(uow.session).get_by_slug(slug)
     if product is None:
-        raise NotFound("product not found", slug=slug)
+        raise NotFoundError("product not found", slug=slug)
 
     stock = await inventory.sellable_map([v.id for v in product.variants])
     response.headers["Cache-Control"] = "public, s-maxage=30, stale-while-revalidate=120"
@@ -115,7 +115,7 @@ async def category_tree(uow: UoWDep, locale: LocaleDep) -> list[CategoryOut]:
 async def breadcrumb(path: str, uow: UoWDep, locale: LocaleDep) -> list[BreadcrumbOut]:
     rows = await CategoryRepository(uow.session).breadcrumb(path)
     if not rows:
-        raise NotFound("category not found", path=path)
+        raise NotFoundError("category not found", path=path)
     return [
         BreadcrumbOut(slug=r.slug, path=r.path, name=resolve_translation(r.name, locale))
         for r in rows

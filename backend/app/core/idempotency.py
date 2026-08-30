@@ -13,7 +13,7 @@ from typing import Any
 
 from redis.asyncio import Redis
 
-from app.core.errors import IdempotencyConflict
+from app.core.errors import IdempotencyConflictError
 
 _CLAIM_TTL = 60 * 10
 _RESULT_TTL = 60 * 60 * 24
@@ -35,11 +35,13 @@ class IdempotencyStore:
             return None
         stored = await self._redis.get(redis_key)
         if stored in (None, b"in_progress", "in_progress"):
-            raise IdempotencyConflict("a request with this key is still in progress")
+            raise IdempotencyConflictError("a request with this key is still in progress")
         return json.loads(stored)
 
     async def complete(self, scope: str, key: str, result: dict[str, Any]) -> None:
-        await self._redis.set(self._key(scope, key), json.dumps(result, default=str), ex=_RESULT_TTL)
+        await self._redis.set(
+            self._key(scope, key), json.dumps(result, default=str), ex=_RESULT_TTL
+        )
 
     async def release(self, scope: str, key: str) -> None:
         await self._redis.delete(self._key(scope, key))

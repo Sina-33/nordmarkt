@@ -19,10 +19,16 @@ JSONB = pg.JSONB
 
 def _ts():
     return (
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(),
-                  nullable=False, index=True),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(),
-                  nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
+            index=True,
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
     )
 
 
@@ -82,8 +88,13 @@ def upgrade() -> None:
     op.create_table(
         "product_variants",
         sa.Column("id", UUID, primary_key=True),
-        sa.Column("product_id", UUID, sa.ForeignKey("products.id", ondelete="CASCADE"),
-                  nullable=False, index=True),
+        sa.Column(
+            "product_id",
+            UUID,
+            sa.ForeignKey("products.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
         sa.Column("sku", sa.String(64), nullable=False),
         sa.Column("options", JSONB, nullable=False, server_default="{}"),
         sa.Column("price_minor_units", sa.Integer, nullable=False),
@@ -104,8 +115,13 @@ def upgrade() -> None:
     op.create_table(
         "product_images",
         sa.Column("id", UUID, primary_key=True),
-        sa.Column("product_id", UUID, sa.ForeignKey("products.id", ondelete="CASCADE"),
-                  nullable=False, index=True),
+        sa.Column(
+            "product_id",
+            UUID,
+            sa.ForeignKey("products.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
         sa.Column("url", sa.Text, nullable=False),
         sa.Column("alt_text", JSONB, nullable=False, server_default="{}"),
         sa.Column("position", sa.Integer, nullable=False, server_default="0"),
@@ -156,8 +172,13 @@ def upgrade() -> None:
     op.create_table(
         "stock_items",
         sa.Column("id", UUID, primary_key=True),
-        sa.Column("variant_id", UUID, sa.ForeignKey("product_variants.id", ondelete="CASCADE"),
-                  nullable=False, index=True),
+        sa.Column(
+            "variant_id",
+            UUID,
+            sa.ForeignKey("product_variants.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
         sa.Column("warehouse_code", sa.String(16), nullable=False, server_default="SE-STO"),
         sa.Column("on_hand", sa.Integer, nullable=False, server_default="0"),
         sa.Column("reserved", sa.Integer, nullable=False, server_default="0"),
@@ -167,14 +188,16 @@ def upgrade() -> None:
         sa.CheckConstraint("reserved <= on_hand", name="ck_stock_items_reserved_within_on_hand"),
         *_ts(),
     )
-    op.create_index("uq_stock_variant_warehouse", "stock_items",
-                    ["variant_id", "warehouse_code"], unique=True)
+    op.create_index(
+        "uq_stock_variant_warehouse", "stock_items", ["variant_id", "warehouse_code"], unique=True
+    )
 
     op.create_table(
         "stock_reservations",
         sa.Column("id", UUID, primary_key=True),
-        sa.Column("variant_id", UUID, sa.ForeignKey("product_variants.id"),
-                  nullable=False, index=True),
+        sa.Column(
+            "variant_id", UUID, sa.ForeignKey("product_variants.id"), nullable=False, index=True
+        ),
         sa.Column("order_id", UUID, index=True),
         sa.Column("cart_id", UUID, index=True),
         sa.Column("quantity", sa.Integer, nullable=False),
@@ -208,7 +231,13 @@ def upgrade() -> None:
     )
 
     order_status = pg.ENUM(
-        "pending_payment", "paid", "packing", "shipped", "delivered", "cancelled", "refunded",
+        "pending_payment",
+        "paid",
+        "packing",
+        "shipped",
+        "delivered",
+        "cancelled",
+        "refunded",
         name="order_status",
     )
     order_status.create(op.get_bind(), checkfirst=True)
@@ -218,8 +247,9 @@ def upgrade() -> None:
         sa.Column("id", UUID, primary_key=True),
         sa.Column("order_number", sa.String(24), nullable=False, unique=True, index=True),
         sa.Column("customer_id", UUID, sa.ForeignKey("users.id"), nullable=False, index=True),
-        sa.Column("status", order_status, nullable=False, server_default="pending_payment",
-                  index=True),
+        sa.Column(
+            "status", order_status, nullable=False, server_default="pending_payment", index=True
+        ),
         sa.Column("currency", sa.String(3), nullable=False, server_default="SEK"),
         sa.Column("locale", sa.String(5), nullable=False, server_default="sv"),
         sa.Column("subtotal_minor_units", sa.Integer, nullable=False),
@@ -294,8 +324,12 @@ def upgrade() -> None:
         sa.Column("payload", JSONB, nullable=False),
         sa.Column("published_at", sa.DateTime(timezone=True)),
         sa.Column("attempts", sa.Integer, nullable=False, server_default="0"),
-        sa.Column("next_attempt_at", sa.DateTime(timezone=True), nullable=False,
-                  server_default=sa.func.now()),
+        sa.Column(
+            "next_attempt_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
         sa.Column("last_error", sa.Text),
         *_ts(),
     )
@@ -307,10 +341,23 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     for table in (
-        "outbox_messages", "processed_webhooks", "payments", "order_items", "orders",
-        "cart_items", "carts", "stock_reservations", "stock_items", "session_tokens",
-        "addresses", "users", "product_images", "product_variants", "products",
-        "brands", "categories",
+        "outbox_messages",
+        "processed_webhooks",
+        "payments",
+        "order_items",
+        "orders",
+        "cart_items",
+        "carts",
+        "stock_reservations",
+        "stock_items",
+        "session_tokens",
+        "addresses",
+        "users",
+        "product_images",
+        "product_variants",
+        "products",
+        "brands",
+        "categories",
     ):
         op.drop_table(table)
     op.execute("DROP TYPE IF EXISTS payment_status")

@@ -20,7 +20,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ARRAY, TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, SoftDelete, Sluggable, Timestamped, UUIDPrimaryKey
+from app.db.base import Base, Sluggable, SoftDelete, Timestamped, UUIDPrimaryKey
 
 
 class Category(UUIDPrimaryKey, Timestamped, Sluggable, Base):

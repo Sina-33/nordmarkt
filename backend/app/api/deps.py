@@ -8,7 +8,7 @@ from fastapi import Depends, Header, Request
 from redis.asyncio import Redis
 
 from app.core.config import Settings, get_settings
-from app.core.errors import Forbidden, Unauthorized
+from app.core.errors import ForbiddenError, UnauthorizedError
 from app.core.idempotency import IdempotencyStore
 from app.core.logging import actor_id_ctx
 from app.core.security import decode_token
@@ -61,11 +61,11 @@ async def get_current_user(
     authorization: Annotated[str | None, Header()] = None,
 ) -> User:
     if not authorization or not authorization.lower().startswith("bearer "):
-        raise Unauthorized("missing bearer token")
+        raise UnauthorizedError("missing bearer token")
     claims = decode_token(authorization.split(" ", 1)[1], "access")
     user = await uow.session.get(User, uuid.UUID(claims["sub"]))
     if user is None or not user.is_active:
-        raise Unauthorized("account unavailable")
+        raise UnauthorizedError("account unavailable")
     actor_id_ctx.set(str(user.id))
     return user
 
@@ -82,17 +82,17 @@ async def get_optional_user(
         return None
     try:
         return await get_current_user(uow, authorization)
-    except Unauthorized:
+    except UnauthorizedError:
         return None
 
 
 OptionalUser = Annotated[User | None, Depends(get_optional_user)]
 
 
-def require_roles(*roles: str):  # noqa: ANN201
+def require_roles(*roles: str):
     async def guard(user: CurrentUser) -> User:
         if not any(user.has_role(role) for role in roles):
-            raise Forbidden("insufficient role", required=list(roles))
+            raise ForbiddenError("insufficient role", required=list(roles))
         return user
 
     return guard

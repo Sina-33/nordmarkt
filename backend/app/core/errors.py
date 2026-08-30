@@ -19,56 +19,56 @@ class DomainError(Exception):
         super().__init__(message or self.code)
 
 
-class NotFound(DomainError):
+class NotFoundError(DomainError):
     code = "not_found"
     status_code = 404
     message_key = "errors.not_found"
 
 
-class Conflict(DomainError):
+class ConflictError(DomainError):
     code = "conflict"
     status_code = 409
     message_key = "errors.conflict"
 
 
-class ValidationFailed(DomainError):
+class ValidationFailedError(DomainError):
     code = "validation_failed"
     status_code = 422
     message_key = "errors.validation"
 
 
-class Unauthorized(DomainError):
+class UnauthorizedError(DomainError):
     code = "unauthorized"
     status_code = 401
     message_key = "errors.unauthorized"
 
 
-class Forbidden(DomainError):
+class ForbiddenError(DomainError):
     code = "forbidden"
     status_code = 403
     message_key = "errors.forbidden"
 
 
-class InsufficientStock(Conflict):
+class InsufficientStockError(ConflictError):
     code = "insufficient_stock"
     message_key = "errors.insufficient_stock"
 
 
-class CartEmpty(ValidationFailed):
+class CartEmptyError(ValidationFailedError):
     code = "cart_empty"
     message_key = "errors.cart_empty"
 
 
-class PriceChanged(Conflict):
+class PriceChangedError(ConflictError):
     code = "price_changed"
     message_key = "errors.price_changed"
 
 
-class PaymentDeclined(Conflict):
+class PaymentDeclinedError(ConflictError):
     code = "payment_declined"
     message_key = "errors.payment_declined"
 
 
-class IdempotencyConflict(Conflict):
+class IdempotencyConflictError(ConflictError):
     code = "idempotency_conflict"
     message_key = "errors.idempotency_conflict"

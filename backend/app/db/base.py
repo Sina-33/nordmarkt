@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 from sqlalchemy import BigInteger, DateTime, MetaData, String, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 # Explicit naming convention so Alembic autogenerates stable constraint names
@@ -21,7 +22,10 @@ NAMING_CONVENTION = {
 
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
-    type_annotation_map = {dict[str, Any]: JSONB, uuid.UUID: PGUUID(as_uuid=True)}
+    type_annotation_map: ClassVar[dict[Any, Any]] = {
+        dict[str, Any]: JSONB,
+        uuid.UUID: PGUUID(as_uuid=True),
+    }
 
 
 class UUIDPrimaryKey:
@@ -42,7 +46,7 @@ class OptimisticLock:
 
     version: Mapped[int] = mapped_column(BigInteger, default=1, nullable=False)
 
-    __mapper_args__ = {"version_id_col": None}
+    __mapper_args__: ClassVar[dict[str, Any]] = {"version_id_col": None}
 
 
 class SoftDelete:

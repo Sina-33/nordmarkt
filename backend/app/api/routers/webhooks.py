@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Request, Response, status
+from sqlalchemy import select
 
 from app.api.deps import CheckoutDep, PaymentsDep, UoWDep
 from app.core.logging import get_logger
 from app.modules.orders.models import Order
-from sqlalchemy import select
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 logger = get_logger(__name__)

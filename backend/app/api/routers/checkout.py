@@ -15,7 +15,7 @@ from app.api.deps import (
     PaymentsDep,
     UoWDep,
 )
-from app.core.errors import NotFound, ValidationFailed
+from app.core.errors import NotFoundError, ValidationFailedError
 from app.modules.catalog.schemas import MoneyOut
 from app.modules.orders.service import OrderQueryService, vat_breakdown
 from app.shared.localization import resolve_translation
@@ -55,7 +55,7 @@ class OrderOut(BaseModel):
     payment_redirect_url: str | None = None
 
 
-def _serialise_order(order, locale: str, redirect: str | None = None) -> OrderOut:  # noqa: ANN001
+def _serialise_order(order, locale: str, redirect: str | None = None) -> OrderOut:
     return OrderOut(
         order_number=order.order_number,
         status=order.status.value,
@@ -103,7 +103,7 @@ async def checkout(
     one.
     """
     if not idempotency_key:
-        raise ValidationFailed("Idempotency-Key header is required for checkout")
+        raise ValidationFailedError("Idempotency-Key header is required for checkout")
 
     if cached := await idempotency.claim("checkout", idempotency_key):
         return OrderOut.model_validate(cached)
@@ -111,7 +111,7 @@ async def checkout(
     try:
         cart = await carts.resolve(user_id=user.id, anonymous_token=nm_cart, create=False)
         if cart is None:
-            raise NotFound("no open cart")
+            raise NotFoundError("no open cart")
 
         order = await service.place_order(
             cart=cart,
