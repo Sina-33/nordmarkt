@@ -1,0 +1,99 @@
+{
+  "brand": { "name": "Nordmarkt", "tagline": "Saker som håller" },
+  "nav": {
+    "search": "Sök i sortimentet",
+    "cart": "Varukorg",
+    "account": "Konto",
+    "menu": "Meny",
+    "close": "Stäng",
+    "all": "Allt"
+  },
+  "home": {
+    "kicker": "Sortiment sedan 2019",
+    "heading": "Möbler och verktyg som går att laga.",
+    "body": "Vi säljer färre saker än vi skulle kunna. Varje artikel har reservdelar, en angiven livslängd och ett svenskt eller nordiskt ursprung vi kan visa.",
+    "browse": "Se sortimentet",
+    "newArrivals": "Nytt i lager",
+    "popular": "Mest sålda",
+    "shopByRoom": "Handla efter kategori"
+  },
+  "product": {
+    "addToCart": "Lägg i varukorgen",
+    "adding": "Lägger till…",
+    "added": "Tillagd",
+    "outOfStock": "Slut i lager",
+    "inStock": "{count} i lager",
+    "lowStock": "Endast {count} kvar",
+    "sku": "Artikelnr",
+    "shipsFrom": "Skickas från",
+    "stock": "Lager",
+    "chooseVariant": "Välj variant",
+    "specs": "Specifikation",
+    "vatIncluded": "Priser inkl. moms",
+    "was": "Tidigare"
+  },
+  "listing": {
+    "results": "{count, plural, =0 {Inga träffar} one {# artikel} other {# artiklar}}",
+    "filters": "Filter",
+    "brand": "Märke",
+    "price": "Pris",
+    "sort": "Sortera",
+    "sortRelevance": "Relevans",
+    "sortNewest": "Nyast",
+    "sortRating": "Högst betyg",
+    "clear": "Rensa filter",
+    "loadMore": "Visa fler",
+    "empty": "Inget matchade sökningen.",
+    "emptyHint": "Prova ett bredare ord eller ta bort ett filter."
+  },
+  "cart": {
+    "title": "Varukorg",
+    "empty": "Varukorgen är tom.",
+    "emptyHint": "Lägg till något så räknar vi ut frakten åt dig.",
+    "quantity": "Antal",
+    "remove": "Ta bort",
+    "subtotal": "Delsumma",
+    "shipping": "Frakt",
+    "freeShipping": "Fri frakt",
+    "vat": "Varav moms",
+    "total": "Att betala",
+    "checkout": "Till kassan",
+    "keepShopping": "Fortsätt handla",
+    "freeShippingProgress": "{amount} kvar till fri frakt",
+    "priceChanged": "Priset har ändrats sedan du la till varan."
+  },
+  "checkout": {
+    "title": "Kassa",
+    "delivery": "Leverans",
+    "payment": "Betalning",
+    "summary": "Sammanfattning",
+    "placeOrder": "Slutför köp",
+    "processing": "Behandlar…",
+    "signInRequired": "Logga in för att slutföra köpet.",
+    "shippingMethod": "Fraktsätt",
+    "standard": "Standard, 2–4 arbetsdagar",
+    "express": "Express, nästa arbetsdag",
+    "pickup": "Hämta i butik, Stockholm"
+  },
+  "errors": {
+    "generic": "Något gick fel. Försök igen.",
+    "not_found": "Vi hittade inte det du sökte.",
+    "conflict": "Åtgärden gick inte att slutföra.",
+    "validation": "Kontrollera uppgifterna och försök igen.",
+    "unauthorized": "Du behöver logga in.",
+    "forbidden": "Du har inte behörighet till detta.",
+    "insufficient_stock": "Det finns inte så många kvar i lager.",
+    "cart_empty": "Varukorgen är tom.",
+    "price_changed": "Priset har ändrats. Granska varukorgen.",
+    "payment_declined": "Betalningen nekades.",
+    "idempotency_conflict": "Ordern behandlas redan.",
+    "internal": "Ett fel uppstod hos oss."
+  },
+  "footer": {
+    "shipping": "Frakt och retur",
+    "spareParts": "Reservdelar",
+    "contact": "Kontakt",
+    "terms": "Köpvillkor",
+    "note": "Demobutik. Inga riktiga betalningar behandlas."
+  }
+}

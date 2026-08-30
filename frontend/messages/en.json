@@ -1,0 +1,102 @@
+{
+  "brand": {
+    "name": "Nordmarkt",
+    "tagline": "Things that last"
+  },
+  "nav": {
+    "search": "Search the range",
+    "cart": "Cart",
+    "account": "Account",
+    "menu": "Menu",
+    "close": "Close",
+    "all": "All"
+  },
+  "home": {
+    "kicker": "Trading since 2019",
+    "heading": "Furniture and tools you can repair.",
+    "body": "We sell fewer things than we could. Every item has spare parts, a stated service life, and a Nordic origin we can show you.",
+    "browse": "Browse the range",
+    "newArrivals": "New in stock",
+    "popular": "Best sellers",
+    "shopByRoom": "Shop by category"
+  },
+  "product": {
+    "addToCart": "Add to cart",
+    "adding": "Adding…",
+    "added": "Added",
+    "outOfStock": "Out of stock",
+    "inStock": "{count} in stock",
+    "lowStock": "Only {count} left",
+    "sku": "SKU",
+    "shipsFrom": "Ships from",
+    "stock": "Stock",
+    "chooseVariant": "Choose a variant",
+    "specs": "Specification",
+    "vatIncluded": "Prices include VAT",
+    "was": "Was"
+  },
+  "listing": {
+    "results": "{count, plural, =0 {No matches} one {# item} other {# items}}",
+    "filters": "Filters",
+    "brand": "Brand",
+    "price": "Price",
+    "sort": "Sort",
+    "sortRelevance": "Relevance",
+    "sortNewest": "Newest",
+    "sortRating": "Top rated",
+    "clear": "Clear filters",
+    "loadMore": "Show more",
+    "empty": "Nothing matched that search.",
+    "emptyHint": "Try a broader word, or drop a filter."
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty.",
+    "emptyHint": "Add something and we will work out the shipping.",
+    "quantity": "Quantity",
+    "remove": "Remove",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "freeShipping": "Free shipping",
+    "vat": "VAT included",
+    "total": "To pay",
+    "checkout": "Go to checkout",
+    "keepShopping": "Keep shopping",
+    "freeShippingProgress": "{amount} away from free shipping",
+    "priceChanged": "The price changed since you added this."
+  },
+  "checkout": {
+    "title": "Checkout",
+    "delivery": "Delivery",
+    "payment": "Payment",
+    "summary": "Summary",
+    "placeOrder": "Place order",
+    "processing": "Processing…",
+    "signInRequired": "Sign in to complete your order.",
+    "shippingMethod": "Shipping method",
+    "standard": "Standard, 2–4 working days",
+    "express": "Express, next working day",
+    "pickup": "Collect in store, Stockholm"
+  },
+  "errors": {
+    "generic": "Something went wrong. Try again.",
+    "not_found": "We could not find that.",
+    "conflict": "That action could not be completed.",
+    "validation": "Check the details and try again.",
+    "unauthorized": "You need to sign in.",
+    "forbidden": "You do not have access to this.",
+    "insufficient_stock": "There are not that many left in stock.",
+    "cart_empty": "Your cart is empty.",
+    "price_changed": "The price changed. Review your cart.",
+    "payment_declined": "The payment was declined.",
+    "idempotency_conflict": "That order is already being processed.",
+    "internal": "Something broke on our side."
+  },
+  "footer": {
+    "shipping": "Shipping and returns",
+    "spareParts": "Spare parts",
+    "contact": "Contact",
+    "terms": "Terms of sale",
+    "note": "Demo store. No real payments are processed."
+  }
+}

@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens.
+ *
+ * The palette is taken from Swedish enamel signage and painted timber rather
+ * than a generic e-commerce theme: bone paper, near-black ink, a deep pine for
+ * primary surfaces, and Dalarna blue as the single interactive accent. Sand is
+ * the only secondary surface, used sparingly.
+ */
+@theme {
+  --color-paper: #efede6;
+  --color-paper-raised: #f7f6f1;
+  --color-ink: #16171a;
+  --color-ink-muted: #5d5f63;
+  --color-pine: #14413a;
+  --color-pine-bright: #1d5b50;
+  --color-blue: #1b3a8f;
+  --color-sand: #e0d8c6;
+  --color-rule: rgba(22, 23, 26, 0.14);
+  --color-alert: #9c3116;
+
+  --font-display: var(--font-familjen), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --radius-none: 0px;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-feature-settings: "cv05" 1, "ss01" 1;
+}
+
+/* Prices, quantities and stock counts must align column-wise in a grid, so
+   every numeric surface uses tabular figures. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/*
+ * The signature element: a warehouse-label strip. Product cards, the cart and
+ * the order confirmation all carry the same monospace row of hard facts (SKU,
+ * stock, origin). It encodes real inventory data rather than decorating, and
+ * it is the one place the design raises its voice.
+ */
+.spec-strip {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  border-top: 1px solid var(--color-rule);
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.4rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.spec-strip > span:not(:first-child)::before {
+  content: "·";
+  margin-right: 0.75rem;
+}
+
+.rule-frame {
+  border: 1px solid var(--color-rule);
+  background-color: var(--color-paper-raised);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
