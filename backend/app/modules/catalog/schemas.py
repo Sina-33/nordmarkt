@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import uuid
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.money import Money
 from app.shared.localization import resolve_translation
+
+if TYPE_CHECKING:
+    from app.modules.catalog.models import Product
 
 
 class MoneyOut(BaseModel):
@@ -114,7 +118,7 @@ class ProductListOut(BaseModel):
     meta: dict[str, object]
 
 
-def to_summary(product, locale: str) -> ProductSummaryOut:
+def to_summary(product: Product, locale: str) -> ProductSummaryOut:
     variant = product.default_variant
     image = product.images[0] if product.images else None
     return ProductSummaryOut(
@@ -148,7 +152,7 @@ def to_summary(product, locale: str) -> ProductSummaryOut:
     )
 
 
-def to_detail(product, locale: str, stock: dict[uuid.UUID, int]) -> ProductDetailOut:
+def to_detail(product: Product, locale: str, stock: dict[uuid.UUID, int]) -> ProductDetailOut:
     summary = to_summary(product, locale)
     highlights = product.highlights.get(locale) or product.highlights.get("sv") or []
     return ProductDetailOut(

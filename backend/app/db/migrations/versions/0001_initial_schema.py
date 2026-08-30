@@ -4,6 +4,8 @@ Kept deliberately free of CONCURRENTLY index builds - those live in 0002 so
 this revision can run inside a single transaction and roll back cleanly.
 """
 
+from typing import Any
+
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql as pg
@@ -17,7 +19,7 @@ UUID = pg.UUID(as_uuid=True)
 JSONB = pg.JSONB
 
 
-def _ts():
+def _ts() -> tuple[sa.Column[Any], sa.Column[Any]]:
     return (
         sa.Column(
             "created_at",
@@ -239,6 +241,9 @@ def upgrade() -> None:
         "cancelled",
         "refunded",
         name="order_status",
+        # The explicit create() below owns the type; without this the
+        # CREATE TABLE would emit a second, unguarded CREATE TYPE.
+        create_type=False,
     )
     order_status.create(op.get_bind(), checkfirst=True)
 
@@ -285,7 +290,13 @@ def upgrade() -> None:
     )
 
     payment_status = pg.ENUM(
-        "initiated", "authorized", "captured", "failed", "refunded", name="payment_status"
+        "initiated",
+        "authorized",
+        "captured",
+        "failed",
+        "refunded",
+        name="payment_status",
+        create_type=False,
     )
     payment_status.create(op.get_bind(), checkfirst=True)
 

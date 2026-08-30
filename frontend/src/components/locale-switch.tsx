@@ -1,6 +1,5 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import { useTransition } from "react";
 import { usePathname, useRouter } from "@/i18n/routing";
 import { routing } from "@/i18n/routing";
@@ -8,7 +7,6 @@ import { routing } from "@/i18n/routing";
 export function LocaleSwitch({ current }: { current: string }) {
   const router = useRouter();
   const pathname = usePathname();
-  const params = useParams();
   const [pending, startTransition] = useTransition();
 
   return (
@@ -21,13 +19,10 @@ export function LocaleSwitch({ current }: { current: string }) {
           aria-current={locale === current ? "true" : undefined}
           onClick={() =>
             // Swapping language must keep the shopper on the same page, not
-            // bounce them to the homepage - the params carry the current
-            // route's dynamic segments across.
+            // bounce them to the homepage - usePathname already carries the
+            // current route's resolved dynamic segments.
             startTransition(() => {
-              router.replace(
-                { pathname, params: params as never },
-                { locale, scroll: false }
-              );
+              router.replace(pathname, { locale, scroll: false });
             })
           }
           className={[

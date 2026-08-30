@@ -16,5 +16,17 @@ export const routing = defineRouting({
 
 export type Locale = (typeof routing.locales)[number];
 
+/**
+ * Narrowing guard for an unknown locale segment. next-intl only started
+ * exporting its own `hasLocale` in v4; this keeps the call sites identical
+ * without dragging in a major upgrade.
+ */
+export function hasLocale(
+  locales: readonly string[],
+  candidate: string | undefined
+): candidate is Locale {
+  return candidate !== undefined && locales.includes(candidate);
+}
+
 export const { Link, redirect, usePathname, useRouter, getPathname } =
   createNavigation(routing);

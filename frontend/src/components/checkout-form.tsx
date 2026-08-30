@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ApiRequestError, browserFetch } from "@/lib/api";
+import { ApiRequestError, browserFetch } from "@/lib/api-client";
 import { useCart } from "./cart-provider";
 
 type Address = {

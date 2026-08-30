@@ -14,7 +14,7 @@ import secrets
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Protocol
+from typing import Any, Protocol
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -120,7 +120,7 @@ class PaymentService:
         payment.captured_at = datetime.now(UTC)
         return payment
 
-    async def record_webhook(self, provider: str, event_id: str, payload: dict) -> bool:
+    async def record_webhook(self, provider: str, event_id: str, payload: dict[str, Any]) -> bool:
         """Returns False if this callback was already handled."""
         self._session.add(ProcessedWebhook(provider=provider, event_id=event_id, payload=payload))
         try:

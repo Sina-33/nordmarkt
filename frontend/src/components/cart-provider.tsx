@@ -9,7 +9,7 @@ import {
   useState,
   useTransition
 } from "react";
-import { ApiRequestError, browserFetch } from "@/lib/api";
+import { ApiRequestError, browserFetch } from "@/lib/api-client";
 import type { Cart } from "@/lib/types";
 
 type CartContextValue = {

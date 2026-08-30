@@ -1,14 +1,16 @@
 import logging
 import sys
 from contextvars import ContextVar
+from typing import Any
 
 import structlog
+from structlog.typing import EventDict
 
 request_id_ctx: ContextVar[str | None] = ContextVar("request_id", default=None)
 actor_id_ctx: ContextVar[str | None] = ContextVar("actor_id", default=None)
 
 
-def _inject_context(_: object, __: str, event_dict: dict) -> dict:
+def _inject_context(_: Any, __: str, event_dict: EventDict) -> EventDict:
     if rid := request_id_ctx.get():
         event_dict["request_id"] = rid
     if aid := actor_id_ctx.get():
@@ -34,4 +36,5 @@ def configure_logging(*, debug: bool = False) -> None:
 
 
 def get_logger(name: str) -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(name)
+    logger: structlog.stdlib.BoundLogger = structlog.get_logger(name)
+    return logger

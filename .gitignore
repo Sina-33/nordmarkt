@@ -9,6 +9,7 @@ venv/
 .ruff_cache/
 .coverage
 htmlcov/
+*.egg-info/
 
 node_modules/
 .next/

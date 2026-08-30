@@ -16,7 +16,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import DateTime, Index, Integer, String, Text, select, update
+from sqlalchemy import DateTime, Index, Integer, String, Text, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -32,7 +32,7 @@ class OutboxMessage(UUIDPrimaryKey, Timestamped, Base):
             "ix_outbox_pending",
             "published_at",
             "next_attempt_at",
-            postgresql_where=(Text("published_at IS NULL")),
+            postgresql_where=text("published_at IS NULL"),
         ),
     )
 

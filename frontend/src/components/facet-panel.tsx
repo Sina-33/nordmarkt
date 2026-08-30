@@ -20,7 +20,11 @@ export function FacetPanel({ brands }: { brands: BrandFacet[] }) {
     // change has to drop it or page two comes back nonsensical.
     next.delete("cursor");
     const updated = new Set(active);
-    updated.has(slug) ? updated.delete(slug) : updated.add(slug);
+    if (updated.has(slug)) {
+      updated.delete(slug);
+    } else {
+      updated.add(slug);
+    }
     for (const value of updated) next.append("brand", value);
     router.push(`${pathname}?${next.toString()}`, { scroll: false });
   }

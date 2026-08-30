@@ -142,7 +142,7 @@ class IdentityService:
         )
 
     async def add_address(self, user_id: uuid.UUID, **fields: object) -> Address:
-        address = Address(user_id=user_id, **fields)  # type: ignore[arg-type]
+        address = Address(user_id=user_id, **fields)
         if address.is_default:
             await self._session.execute(
                 update(Address).where(Address.user_id == user_id).values(is_default=False)

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import uuid
-from collections.abc import AsyncIterator
-from typing import Annotated
+from collections.abc import AsyncIterator, Callable, Coroutine
+from typing import Annotated, Any
 
 from fastapi import Depends, Header, Request
 from redis.asyncio import Redis
@@ -34,7 +34,8 @@ UoWDep = Annotated[UnitOfWork, Depends(get_uow)]
 
 
 def get_redis(request: Request) -> Redis:
-    return request.app.state.redis
+    redis: Redis = request.app.state.redis
+    return redis
 
 
 async def get_locale(
@@ -89,7 +90,7 @@ async def get_optional_user(
 OptionalUser = Annotated[User | None, Depends(get_optional_user)]
 
 
-def require_roles(*roles: str):
+def require_roles(*roles: str) -> Callable[..., Coroutine[Any, Any, User]]:
     async def guard(user: CurrentUser) -> User:
         if not any(user.has_role(role) for role in roles):
             raise ForbiddenError("insufficient role", required=list(roles))

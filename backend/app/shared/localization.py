@@ -26,7 +26,7 @@ class TranslatedText(BaseModel):
 
     def resolve(self, locale: str) -> str:
         for candidate in FALLBACK_CHAIN.get(locale, ("sv", "en")):
-            value = getattr(self, candidate, None)
+            value: str | None = getattr(self, candidate, None)
             if value:
                 return value
         return ""

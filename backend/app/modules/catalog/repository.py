@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from sqlalchemy import Select, and_, func, or_, select
+from sqlalchemy import ColumnElement, Select, and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.pagination import Page, decode_cursor, encode_cursor
@@ -44,7 +44,7 @@ class ProductQuery:
         self.cursor = cursor
 
 
-_SORTS = {
+_SORTS: dict[str, tuple[ColumnElement[Any], ...]] = {
     "relevance": (Product.created_at.desc(), Product.id.desc()),
     "newest": (Product.created_at.desc(), Product.id.desc()),
     "rating": (Product.rating_average.desc(), Product.id.desc()),
@@ -61,7 +61,8 @@ class ProductRepository:
         stmt = select(Product).where(
             Product.slug == slug, Product.is_published.is_(True), Product.deleted_at.is_(None)
         )
-        return await self._session.scalar(stmt)
+        product: Product | None = await self._session.scalar(stmt)
+        return product
 
     async def get_variant(self, variant_id: uuid.UUID) -> ProductVariant | None:
         return await self._session.get(ProductVariant, variant_id)
@@ -199,7 +200,10 @@ class CategoryRepository:
         return list((await self._session.scalars(stmt)).all())
 
     async def by_path(self, path: str) -> Category | None:
-        return await self._session.scalar(select(Category).where(Category.path == path))
+        category: Category | None = await self._session.scalar(
+            select(Category).where(Category.path == path)
+        )
+        return category
 
     async def breadcrumb(self, path: str) -> list[Category]:
         """All ancestors plus the node itself, in one query."""

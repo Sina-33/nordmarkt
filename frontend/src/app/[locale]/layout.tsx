@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { NextIntlClientProvider, hasLocale } from "next-intl";
+import { NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Familjen_Grotesk, IBM_Plex_Mono, Inter } from "next/font/google";
 
@@ -8,7 +8,7 @@ import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { CartProvider } from "@/components/cart-provider";
 import { getCategories } from "@/lib/catalog";
-import { routing } from "@/i18n/routing";
+import { hasLocale, routing } from "@/i18n/routing";
 import "./globals.css";
 
 // Familjen Grotesk is a Swedish typeface commissioned for public signage.

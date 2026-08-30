@@ -2,8 +2,29 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import asdict, dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
+from decimal import Decimal
 from typing import Any
+
+
+def _jsonable(value: Any) -> Any:
+    """Coerce a value into something ``json.dumps`` accepts.
+
+    The payload lands in a JSONB column, so UUIDs and datetimes have to be
+    rendered here rather than at the driver. Every event carries at least one
+    UUID, so without this no event can be written to the outbox at all.
+    """
+    if isinstance(value, uuid.UUID):
+        return str(value)
+    if isinstance(value, datetime | date):
+        return value.isoformat()
+    if isinstance(value, Decimal):
+        return str(value)
+    if isinstance(value, dict):
+        return {str(k): _jsonable(v) for k, v in value.items()}
+    if isinstance(value, list | tuple):
+        return [_jsonable(v) for v in value]
+    return value
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -19,7 +40,7 @@ class DomainEvent:
     def to_payload(self) -> dict[str, Any]:
         data = asdict(self)
         data.pop("aggregate_type", None)
-        return data
+        return {key: _jsonable(value) for key, value in data.items()}
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

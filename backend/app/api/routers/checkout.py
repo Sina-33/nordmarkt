@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Cookie, Header, status
 from pydantic import BaseModel, Field
@@ -17,6 +17,7 @@ from app.api.deps import (
 )
 from app.core.errors import NotFoundError, ValidationFailedError
 from app.modules.catalog.schemas import MoneyOut
+from app.modules.orders.models import Order
 from app.modules.orders.service import OrderQueryService, vat_breakdown
 from app.shared.localization import resolve_translation
 
@@ -51,11 +52,11 @@ class OrderOut(BaseModel):
     shipping: MoneyOut
     total: MoneyOut
     vat_breakdown: dict[str, int]
-    shipping_address: dict
+    shipping_address: dict[str, Any]
     payment_redirect_url: str | None = None
 
 
-def _serialise_order(order, locale: str, redirect: str | None = None) -> OrderOut:
+def _serialise_order(order: Order, locale: str, redirect: str | None = None) -> OrderOut:
     return OrderOut(
         order_number=order.order_number,
         status=order.status.value,

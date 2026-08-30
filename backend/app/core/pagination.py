@@ -22,7 +22,8 @@ def encode_cursor(payload: dict[str, Any]) -> str:
 
 def decode_cursor(cursor: str) -> dict[str, Any]:
     padding = "=" * (-len(cursor) % 4)
-    return json.loads(base64.urlsafe_b64decode(cursor + padding))
+    payload: dict[str, Any] = json.loads(base64.urlsafe_b64decode(cursor + padding))
+    return payload
 
 
 @dataclass(slots=True)

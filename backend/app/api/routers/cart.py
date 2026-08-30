@@ -8,9 +8,12 @@ from pydantic import BaseModel, Field
 
 from app.api.deps import CartDep, LocaleDep, OptionalUser, UoWDep
 from app.core.errors import NotFoundError
+from app.modules.cart.models import Cart
+from app.modules.cart.service import CartService
 from app.modules.catalog.repository import ProductRepository
 from app.modules.catalog.schemas import MoneyOut
 from app.shared.localization import resolve_translation
+from app.shared.unit_of_work import UnitOfWork
 
 router = APIRouter(prefix="/cart", tags=["cart"])
 
@@ -50,7 +53,7 @@ class CartOut(BaseModel):
     free_shipping_remaining: MoneyOut | None
 
 
-async def _serialise(cart, service, uow, locale: str) -> CartOut:
+async def _serialise(cart: Cart, service: CartService, uow: UnitOfWork, locale: str) -> CartOut:
     products = ProductRepository(uow.session)
     variants = await products.get_variants([i.variant_id for i in cart.items])
     totals = await service.totals(cart)

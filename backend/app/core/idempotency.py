@@ -36,7 +36,8 @@ class IdempotencyStore:
         stored = await self._redis.get(redis_key)
         if stored in (None, b"in_progress", "in_progress"):
             raise IdempotencyConflictError("a request with this key is still in progress")
-        return json.loads(stored)
+        cached: dict[str, Any] = json.loads(stored)
+        return cached
 
     async def complete(self, scope: str, key: str, result: dict[str, Any]) -> None:
         await self._redis.set(
