@@ -1,0 +1,77 @@
+name: nordmarkt
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: nordmarkt
+      POSTGRES_PASSWORD: nordmarkt
+      POSTGRES_DB: nordmarkt
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nordmarkt"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --save "" --appendonly no
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment:
+      NM_DATABASE_URL: postgresql+asyncpg://nordmarkt:nordmarkt@db:5432/nordmarkt
+      NM_REDIS_URL: redis://redis:6379/0
+      NM_JWT_SECRET: local-development-secret-not-for-production
+      NM_DEBUG: "true"
+      NM_CORS_ORIGINS: '["http://localhost:3000"]'
+    ports: ["8000:8000"]
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    command: >
+      sh -c "alembic upgrade head &&
+             python scripts/seed.py &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ./backend/app:/app/app
+
+  # Deliberately a separate process, not a thread inside the API. A slow
+  # consumer must never add latency to a shopper's request.
+  relay:
+    build: ./backend
+    environment:
+      NM_DATABASE_URL: postgresql+asyncpg://nordmarkt:nordmarkt@db:5432/nordmarkt
+      NM_REDIS_URL: redis://redis:6379/0
+      NM_JWT_SECRET: local-development-secret-not-for-production
+    depends_on:
+      db: {condition: service_healthy}
+    command: python -m app.workers.outbox_relay
+
+  sweeper:
+    build: ./backend
+    environment:
+      NM_DATABASE_URL: postgresql+asyncpg://nordmarkt:nordmarkt@db:5432/nordmarkt
+      NM_REDIS_URL: redis://redis:6379/0
+      NM_JWT_SECRET: local-development-secret-not-for-production
+    depends_on:
+      db: {condition: service_healthy}
+    command: python -m app.workers.reservation_sweeper
+
+  web:
+    build: ./frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+      INTERNAL_API_URL: http://api:8000/api/v1
+    ports: ["3000:3000"]
+    depends_on: [api]
+
+volumes:
+  pgdata:
